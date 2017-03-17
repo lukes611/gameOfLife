@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+	<head></head>
+	<body>
+	
+		<h1>Conway's Game of Life</h1>
+		<canvas id="myCanvas" width="500" height="500"></canvas>
+		
+		<script>
+			function Grid(w, h){
+				this.w = w, this.h = h;
+				this.data = Array.apply(undefined, Array(w*h)).map(x=>0);
+			}
+			Grid.prototype.at = function(x,y,v){
+				if(arguments.length == 3) this.data[y * this.w + x] = v;
+				return this.data[y * this.w + x];
+			};
+			Grid.prototype.get = function(x,y){
+				return this.data[y * this.w + x];
+			};
+			
+			Grid.prototype.set = function(x,y,v){
+				this.data[y * this.w + x] = v;
+			};
+			Grid.prototype.ib = function(x,y){
+				return x >= 0 && y >= 0 && x < this.w && y < this.h;
+			};
+			Grid.prototype.forEach = function(f){
+				f = f.bind(this);
+				for(var y = 0; y < this.h; y++)
+					for(var x = 0; x < this.w; x++)
+						f(x,y, this.get(x,y));
+			};
+			
+			
+			Grid.prototype.draw = function(sz){
+				sz = sz || 10;
+				var c = document.getElementById('myCanvas');
+				var ctx = c.getContext('2d');
+				ctx.fillStyle = 'black';
+				ctx.fillRect(0,0,500, 500);
+				ctx.fillStyle = 'white';
+				ctx.strokeStyle = 'white';
+				var y,x;
+				for(y =0; y < this.h; y++){
+					for(x = 0; x < this.w; x++){
+						if(this.get(x,y)==1) ctx.fillStyle = 'white';
+						else ctx.fillStyle = 'black';
+						ctx.fillRect(x*sz + 1, y*sz + 1, sz, sz);
+					}
+				}
+			};
+			
+			Grid.prototype.init = function(N){
+				N = N || 5;
+				for(var i = 0; i < N; i++){
+					var p = {
+						x : Math.floor(Math.random() * this.w),
+						y : Math.floor(Math.random() * this.h)
+					};
+					this.set(p.x, p.y, 1);
+				}
+			};
+			
+			Grid.prototype.clone = function(){
+				var ng = new Grid(this.w, this.h);
+				ng.data = this.data.map(x=>x);
+				return ng;
+			};
+			
+			Grid.prototype.countNeighbours = function(X,Y){
+				var c = 0;
+				for(var y = Y-1; y <= Y+1; y++){
+					for(var x = X-1; x <= X+1; x++){
+						if(X == x && Y == y) continue;
+						if(this.ib(x,y) && this.get(x,y) == 1) c++;
+					}
+				}
+				return c;
+			};
+			
+			Grid.prototype.iterate = function(){
+				var og = this.clone();
+				var n, y, x, v;
+				for(y = 0; y < this.h; y++){
+					for(x = 0; x < this.w; x++){
+						n = og.countNeighbours(x,y);
+						v = og.get(x,y);
+						if(v == 1){
+							if(n < 2 || n > 3) this.set(x,y,0);
+						}else if(n == 3) this.set(x,y,1);
+					}
+				}
+				
+				
+			};
+			
+			var g = new Grid(200, 200);
+			g.init(g.w*g.h);
+			setTimeout(function update(){
+				g.iterate();
+				g.draw(2.5);
+				setTimeout(update, 30);
+			}, 1);
+			g.draw();
+			
+			
+			
+			
+			
+		
+		</script>
+	</body>
+</html>
