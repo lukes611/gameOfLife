@@ -1,16 +1,38 @@
 <!DOCTYPE html>
 <html>
-	<head></head>
+	<head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body{
+                margin : 0;
+                padding : 0;
+                background-color : black;
+            }
+            canvas{
+                margin-left : auto;
+                margin-right : auto;
+                width : 100%;
+                height : 99vh;
+                
+            }
+        
+        
+        </style>
+    </head>
 	<body>
 	
-		<h1>Conway's Game of Life</h1>
-		<canvas id="myCanvas" width="500" height="500"></canvas>
+		<canvas id="myCanvas" width="1280" height="720"></canvas>
 		
 		<script>
 			function Grid(w, h){
 				this.w = w, this.h = h;
-				this.data = Array.apply(undefined, Array(w*h)).map(x=>0);
-			}
+                this.data = Array.apply(undefined, Array(w*h)).map(x=>0);
+                this.data2 = this.data.map(x=>0);
+                this.canvas = document.getElementById('myCanvas');
+                this.cw = this.canvas.width;
+                this.ch = this.canvas.height;
+                this.ctx = this.canvas.getContext('2d');
+            }
 			Grid.prototype.at = function(x,y,v){
 				if(arguments.length == 3) this.data[y * this.w + x] = v;
 				return this.data[y * this.w + x];
@@ -18,7 +40,6 @@
 			Grid.prototype.get = function(x,y){
 				return this.data[y * this.w + x];
 			};
-			
 			Grid.prototype.set = function(x,y,v){
 				this.data[y * this.w + x] = v;
 			};
@@ -31,16 +52,11 @@
 					for(var x = 0; x < this.w; x++)
 						f(x,y, this.get(x,y));
 			};
-			
-			
 			Grid.prototype.draw = function(sz){
 				sz = sz || 10;
-				var c = document.getElementById('myCanvas');
-				var ctx = c.getContext('2d');
+				var ctx = this.ctx;
 				ctx.fillStyle = 'black';
-				ctx.fillRect(0,0,500, 500);
-				ctx.fillStyle = 'white';
-				ctx.strokeStyle = 'white';
+				ctx.fillRect(0,0,this.cw, this.ch);
 				var y,x;
 				for(y =0; y < this.h; y++){
 					for(x = 0; x < this.w; x++){
@@ -50,7 +66,6 @@
 					}
 				}
 			};
-			
 			Grid.prototype.init = function(N){
 				N = N || 5;
 				for(var i = 0; i < N; i++){
@@ -61,13 +76,11 @@
 					this.set(p.x, p.y, 1);
 				}
 			};
-			
 			Grid.prototype.clone = function(){
 				var ng = new Grid(this.w, this.h);
 				ng.data = this.data.map(x=>x);
 				return ng;
 			};
-			
 			Grid.prototype.countNeighbours = function(X,Y){
 				var c = 0;
 				for(var y = Y-1; y <= Y+1; y++){
@@ -78,37 +91,42 @@
 				}
 				return c;
 			};
-			
 			Grid.prototype.iterate = function(){
-				var og = this.clone();
-				var n, y, x, v;
-				for(y = 0; y < this.h; y++){
+				var n, y, x, v, ind, tmp;
+                for(y = 0; y < this.h; y++){
 					for(x = 0; x < this.w; x++){
-						n = og.countNeighbours(x,y);
-						v = og.get(x,y);
+                        ind = y * this.w + x;
+						n = this.countNeighbours(x,y);
+						v = this.data[ind];
+                        this.data2[ind] = v;
 						if(v == 1){
-							if(n < 2 || n > 3) this.set(x,y,0);
-						}else if(n == 3) this.set(x,y,1);
-					}
+							if(n < 2 || n > 3) this.data2[ind] = 0;
+						}else if(n == 3) this.data2[ind] = 1;
+                    }
 				}
-				
-				
+                tmp = this.data2;
+                this.data2 = this.data;
+                this.data = tmp;
 			};
-			
-			var g = new Grid(200, 200);
+            var pxsz = 3;
+            
+            var Window = {
+                w : window.innerWidth - 20,
+                h : window.innerHeight - 20
+            };
+            
+			var g = new Grid(Math.floor(Window.w / pxsz), Math.floor(Window.h / pxsz));
+            g.canvas.width = Window.w;
+            g.canvas.height = Window.h;
+            g.cw = Window.w;
+            g.ch = Window.h;
+            
 			g.init(g.w*g.h);
 			setTimeout(function update(){
 				g.iterate();
-				g.draw(2.5);
-				setTimeout(update, 30);
+				g.draw(pxsz);
+				setTimeout(update, 16);
 			}, 1);
-			g.draw();
-			
-			
-			
-			
-			
-		
 		</script>
 	</body>
 </html>
