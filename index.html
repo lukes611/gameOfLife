@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<title>game of life</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             body{
@@ -8,20 +9,23 @@
                 padding : 0;
                 background-color : black;
             }
+			.canvas-container {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 100vh;
+			}
             canvas{
                 margin-left : auto;
                 margin-right : auto;
-                width : 100%;
-                height : 99vh;
-                
             }
-        
-        
         </style>
     </head>
 	<body>
 	
-		<canvas id="myCanvas" width="1280" height="720"></canvas>
+		<div class="canvas-container">
+			<canvas id="myCanvas"></canvas>
+		</div>
 		
 		<script>
 			function Grid(w, h){
@@ -110,16 +114,26 @@
 			};
             var pxsz = 3;
             
-            var Window = {
-                w : window.innerWidth - 20,
-                h : window.innerHeight - 20
-            };
+            let windowSize;
+
+			const isMobile = window.innerWidth < 600;
+			if (isMobile) {
+				windowSize = {
+					w: window.innerWidth,
+					h: window.innerHeight,
+				};
+			} else {
+				windowSize = {
+					w: 600,
+					h: 480,
+				};
+			}
             
-			var g = new Grid(Math.floor(Window.w / pxsz), Math.floor(Window.h / pxsz));
-            g.canvas.width = Window.w;
-            g.canvas.height = Window.h;
-            g.cw = Window.w;
-            g.ch = Window.h;
+			var g = new Grid(Math.floor(windowSize.w / pxsz), Math.floor(windowSize.h / pxsz));
+            g.canvas.width = windowSize.w;
+            g.canvas.height = windowSize.h;
+            g.cw = windowSize.w;
+            g.ch = windowSize.h;
             
 			g.init(g.w*g.h);
 			setTimeout(function update(){
